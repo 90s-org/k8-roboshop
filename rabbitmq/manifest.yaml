@@ -1,13 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq
+  namespace: roboshop
+  labels:
+    project: roboshop
+    tier: db
+    component: rabbitmq
+data:
+  RABBITMQ_DEFAULT_USER: roboshop
+  RABBITMQ_DEFAULT_PASS: roboshop123
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mysql
+  name: rabbitmq
   namespace: roboshop
   # these labels are replicaset labels
   labels:
     project: roboshop
     tier: db
-    component: mysql
+    component: rabbitmq
 spec:
   replicas: 1
   selector:
@@ -15,35 +28,38 @@ spec:
     matchLabels:
       project: roboshop
       tier: db
-      component: mysql
+      component: rabbitmq
   # This is pod definition, pod is subset of replicaset
   template:
     metadata:
       labels:
         project: roboshop
         tier: db
-        component: mysql
+        component: rabbitmq
     spec:
       containers:
-      - name: mysql
-        image: joindevops/mysql:1.4.0
+      - name: rabbitmq
+        image: rabbitmq:3
+        envFrom:
+        - configMapRef:
+            name: rabbitmq
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: mysql
+  name: rabbitmq
   namespace: roboshop
   labels:
     project: roboshop
     tier: db
-    component: mysql
+    component: rabbitmq
 spec:
   selector:
     # labels are used as selectors
     project: roboshop
     tier: db
-    component: mysql
+    component: rabbitmq
   ports:
   - protocol: TCP
-    port: 3306 # servie port
-    targetPort: 3306 # container portaq
+    port: 5672 # servie port
+    targetPort: 5672 # container portA
